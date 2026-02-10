@@ -1,0 +1,11 @@
+1. Nel container
+
+sudo apt install -y apache2
+sudo service apache2 start
+
+2. Sul localhost dovresti vedere tutto funzionante
+
+3. File
+
+root: /var/www/html/
+html: /var/www/html/index.html

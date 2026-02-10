@@ -1,0 +1,71 @@
+1. Entra nel container
+
+docker exec -it container bash
+
+2. Installa SSH e Nano
+
+apt update
+apt install -y openssh-server sudo
+apt install -y nano
+
+3. Crea la directory SSH
+
+mkdir /var/run/sshd
+
+4. Crea un utente (NO root)
+
+adduser dario
+usermod -aG sudo dario
+
+5. Configura SSH
+
+nano /etc/ssh/sshd_config
+
+6. Aggiungi
+
+Port 22
+PermitRootLogin no
+PasswordAuthentication yes
+PubkeyAuthentication yes
+
+7. Avvia ssh
+
+service ssh start
+
+8. Su HOST
+
+ssh-keygen -t ed25519 -C "docker"
+
+Premi invio a tutto.
+
+Le chiavi saranno in:
+~/.ssh/id_ed25519
+~/.ssh/id_ed25519.pub
+
+9. Copiare la chiave pubblica nel container
+
+ssh-copy-id -p 2222 dario@localhost
+
+Inserisci la password dell'utente (dario)
+
+9.1 Manuale per copiare la chiave se manca ssh-copy-id
+
+Su CONTAINER
+mkdir -p /home/dario/.ssh
+chmod 700 /home/dario/.ssh
+nano /home/dario/.ssh/authorized_keys
+
+Su HOST
+
+cat ~/.ssh/id_ed25519.pub
+
+Copia tutto il cat in authorized_keys
+
+Su CONTAINER
+
+chmod 600 /home/dario/.ssh/authorized_keys
+chown -R dario:dario /home/dario/.ssh
+
+10. Login SSH senza password
+
+ssh -p 2222 dario@localhost
