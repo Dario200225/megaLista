@@ -5,6 +5,10 @@ docker run -dit --name "second" -p 2222:22 -p 8080:80 ubuntu:22.04
 
 docker exec -it second bash
 
+1.1 Se container su un'altra macchina
+
+ssh nomeutente@ip.ip.ip.ip port
+
 2. Installa SSH e Nano
 
 apt update
@@ -17,8 +21,8 @@ mkdir /var/run/sshd
 
 4. Crea un utente (NO root)
 
-adduser dario
-usermod -aG sudo dario
+adduser nuovouser
+usermod -aG sudo nuovouser
 
 5. Configura SSH
 
@@ -40,7 +44,7 @@ service ssh start
 
 8. Su HOST
 
-ssh-keygen -t ed25519 -C "docker"
+ssh-keygen -t ed25519 -C "nuovouser"
 
 Premi invio a tutto.
 
@@ -50,28 +54,28 @@ Le chiavi saranno in:
 
 9. Copiare la chiave pubblica nel container
 
-ssh-copy-id -p 2222 dario@localhost
+ssh-copy-id -p 2222 nuovoutente@ip.ip.ip.ip
 
-Inserisci la password dell'utente (dario)
+Inserisci la password dell'utente (nuovoutente)
 
-9.1 Manuale per copiare la chiave se manca ssh-copy-id
+9.1 Per copiare la chiave se manca ssh-copy-id
 
 Su CONTAINER
-mkdir -p /home/dario/.ssh
-chmod 700 /home/dario/.ssh
-nano /home/dario/.ssh/authorized_keys
+mkdir -p /home/nuovoutente/.ssh
+chmod 700 /home/nuovoutente/.ssh
+nano /home/nuovoutente/.ssh/authorized_keys
 
 Su HOST
 
 cat ~/.ssh/id_ed25519.pub
 
-Copia tutto il cat in authorized_keys
+Copia tutto il cat in /home/nuovoutente/.ssh/authorized_keys
 
 Su CONTAINER
 
-chmod 600 /home/dario/.ssh/authorized_keys
-chown -R dario:dario /home/dario/.ssh
+chmod 600 /home/nuovoutente/.ssh/authorized_keys
+chown -R nuovoutente:nuovoutente /home/nuovoutente/.ssh
 
 10. Login SSH senza password
 
-ssh -p 2222 dario@localhost
+ssh -p 2222 nuovoutente@ip.ip.ip.ip
