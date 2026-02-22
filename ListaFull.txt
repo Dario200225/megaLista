@@ -1,0 +1,240 @@
+1.Stabilire connessione SSH con le chiavi così da non dover più inserire la password
+
+ssh-keygen -t ed25519 -C "Nome a scelta"
+
+#vengono generate due chiavi una pubblica (id_ed25519.pub) e una privata (id_ed25519)
+#QUESTE CHIAVI VENGONO SALVATE IN home/nome_utente/.ssh/ 
+
+ssh-copy-id nome_pc_remoto@indirizzoIP
+#Copia la chiave sul pc remoto
+
+ssh-copy-id (tilde)/.ssh/id_ed25519.pub nome_pc_remoto@indirizzoIP
+#Specifica quale chiave copiare
+#Chiederà un'ultima volta la password del pc remoto
+
+ssh nome_pc_remoto@indirizzoIP 
+#Effettua la connessione
+
+
+
+2. Installazione e avvio Apache2
+
+?sudo apt install apache2
+#Installa il pacchetto Apache2
+
+sudo systemctl start apache2
+#avvia apache2
+
+sudo systemctl status apache2
+#verifica lo stato del servizio
+
+sudo systemctl enable apache2
+#consente l'avvio automatico al boot di apache2
+
+
+
+
+Dove sono Salvati i file di Apache?
+
+/var/www/html/
+Directory dove vengono memorizzati i file HTML, CSS, Javascript e altri asset del sito web.
+Cartella principale che apache2 usa per impostazione predefinita
+
+
+/etc/apache2/
+Configurazione Principale, contiene tutti i file di configurazione di Apache, incluso il file apache2.conf e le directory per modulo e siti
+
+/etc/apache2/sites-available/
+Virtual Host Disponibili, memorizza i file di configurazione per i virtualhost disponibili anche se non ancora attivi
+
+/etc/apache2/sites/enabled
+Virtual Host Attivi, contiene link simbolici ai virtual host attualmente abilitati e in esecuzione sul server
+
+/var/log/apache2/
+File di log, contiene i log di accesso ed errori
+
+
+
+
+Creiamo la prima pagina Web Semplice (OPZIONALE)
+
+
+?sudo nano /var/www/html/index.html
+
+#crea un file index.html nella cartella html
+
+#Inserire codice html per sperimentare e vedere l'aggiornamento
+<!DOCTYPE html>
+<html lang="it">
+        <head>
+		<meta charset="UTF-8">
+        <title>Il mio primo sito</title>
+        </head>
+        <body>
+        <h1>Benvenuti nel mio server web!</h1>
+        <p>Apache funziona correttamente.</p>
+        <p>Questo è il primo passo verso
+        la creazione di siti web professionali.</p>
+        </body>
+</html>
+
+#Salvare e uscire
+
+sudo chown -R $USER:$USER /var/www/html
+#cambiamo il proprietario dei file assegnandoli all'utente attuale con $USER:$USER
+
+sudo chmod -R 755 /var/www/html
+#imposta i permessi in modo ricorsivo (755. 7 proprietario lwx, 5 gruppo lx, 5 others lx)
+
+
+
+
+Configurare un Virtual Host, permettono di ospitare più siti web su un singolo server Apache
+
+
+?sudo mkdir -p /var/www/miosito
+sudo chown -R $USER:$USER /var/www/miosito
+#Crea la directory per il nuovo sito e fa diventare l'utente il proprietario
+
+sudo nano/etc/apache2/sites-available/miosito.conf
+#crea il file di configurazione, i file .conf in sites-available definiscono le configurazioni dei virtual host
+
+#CONFIGURAZIONE DEL FILE:
+<VirtualHost *:80>
+        ServerAdmin admin@miosito.local
+        ServerName miosito.local
+        DocumentRoot /var/www/miosito
+        
+        ErrorLog ${APACHE_LOG_DIR}/miosito_error.log
+        CustomLog ${APACHE_LOG_DIR}/miosito_access.log combined
+</VirtualHost>
+
+#Parametri di Configurazione: 
+
+#ServerAdmin - Email dell'amministratore del sito
+#ServerName - Nome di dominio del sito
+#DocumentRoot - Percorso dei file del sito
+#ErrorLog - File di log degli errori
+#CustomLog - File di log degli accessi
+
+#Attivare il VirtualHost
+
+sudo a2ensite miosito.conf
+#enables miosito.conf
+#ricaricare apache (sudo reload apache2)
+
+sudo a2dissite 000-default.conf
+#disabilita il sito default (opzionale)
+
+
+sudo apache2ctl configtest
+#controlla la sintassi del file di configurazione
+#dovrebbe dare Syntax OK
+
+#PER TESTARE IL VIRTUAL HOST LOCALMENTE BISOGNA AGGIUNGERE:
+
+sudo nano /etc/hosts
+
+#aggiungere la riga
+127.0.0.1 miosito.local
+
+#FATTO TUTTO CIO' RICARICARE LA CONFIGURAZIONE
+sudo systemctl reload apache2
+
+#altrimenti riavviare completamente
+sudo systemctl restart apache2
+?
+3. Installare MySQL (per Database)
+
+?sudo apt install mysql-server (mariadb-server)
+
+sudo mysql_secure_installation (se funziona bene altrimenti sticazzi)
+#Questo script interattivo guida attraverso diverse opzioni di sicurezza, come l'impostazione di una password (rispondere Y a tutte per la massima sicurezza del database)
+
+sudo systemctl start mysql (mariadb)
+sudo systemctl enable mysql (mariadb)
+
+
+
+
+4. Installare PHP
+
+?#PACCHETTI STRETTAMENTE NECESSARI
+
+#PACCHETTO PHP BASE (php)
+#MODULO APACHE (libapache2-mod-php)
+#ESTENSIONE MySQL (php-mysql)
+
+sudo apt install php libapache2-mod-php php-mysql
+
+php -v #verifica versione php
+
+sudo systemctl restart apache2
+
+
+
+5. Creazione Database per Wordpress
+
+?sudo mysql -u root -p (senza secure installation fare sudo mariadb)
+#accede a mysql come root, ricordarsi la password inserita durante la secure installation di mysql
+
+#crea il database per wordpress
+CREATE DATABASE wordpress DEFAULT CHARACTER SET
+utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+
+#crea utente dedicato
+CREATE USER 'wpuser'@'localhost' IDENTIFIED BY 'password_sicura_complessa';
+
+
+#concede tutti i privilegi sul database all'utente wordpress
+GRANT ALL PRIVILEGES ON wordpress.* TO 'wpuser'@'localhost';
+
+#applica le modifiche
+FLUSH PRIVILEGES;
+EXIT;
+
+
+
+6. Scaricare Wordpress
+
+cd /tmp 
+#usiamo tmp per scaricare file temporanei che verranno poi spostati nella posizione definitiva
+
+wget https://it.wordpress.org/latest-it_IT.tar.gz
+#scarica l'ultima versione stabile di Wordpress in Italiano
+
+tar -xzvf latest-it_IT.tar.gz
+#decomprime l'archivio in una cartella wordpress
+
+sudo mv wordpress /var/www/miosito/
+#spostiamo la cartella di wordpress nella cartella di miosito così che possa rispondere all'indirizzo http://miosito.local
+
+sudo chown -R www-data:www-data /var/www/miosito/wordpress
+#il proprietario diventa l'utente sotto cui apache esegue sul sistema
+
+sudo chmod -R 755 /var/www/miosito/wordpress
+#diamo i permessi necessari
+
+sudo a2enmod rewrite
+#permette la riscrittura degli URL
+
+#restartare apache2
+
+sudo nano/etc/apache2/apache2.conf
+#apre il file di configurazione per modificare le impostazioni della directory
+
+#TROVARE SEZIONE:
+<Directory /var/www/>
+Options Indexes FollowSymLinks
+AllowOverride None
+Require all granted
+</Directory>
+
+
+#Cambiare AllowOverride
+#Trovare la sezione:
+#Modificare AllowOverride None in AllowOverride All e salvare e uscire
+
+#ED INFINE RESTARTARE APACHE2
+sudo systemctl restart apache2
