@@ -1,0 +1,248 @@
+1. Accedi a MySQL
+
+sudo mysql 
+
+2. Cre un database
+
+CREATE DATABASE wordpress DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'wpuser'@'localhost' IDENTIFIED BY 'password-sicura-qui';
+
+GRANT ALL PRIVILEGES ON wordpress.* TO 'wpuser'@'localhost';
+
+FLUSH PRIVILEGES;
+EXIT;
+
+
+
+
+
+apt update
+apt install nginx -y
+systemctl start nginx
+nano /etc/nginx/sites-available/default
+mv index.php /var/www/html
+
+prova permessi:
+chown -R www-data:www-data /var/www/html
+chmod -R 755 /var/www/html
+
+nginx -s reload
+curl localhost
+
+
+
+
+| File                            			| Serve per         	|
+| -------------------------------------------	| ----------------- 	|
+| /etc/apache2/apache2.conf   	| Config principale 	|
+| /etc/apache2/ports.conf	      	| Porte in ascolto  	|
+| /etc/apache2/sites-available/ 	| Config siti       	|
+| /etc/apache2/sites-enabled/   	| Siti attivi       		|
+| /etc/apache2/mods-available/  	| Moduli            	|
+| /etc/apache2/mods-enabled/    	| Moduli attivi     	|
+| /var/log/apache2/				| Log Apache		| (live con tail -f /var/log/apache2/error.log)
+| /var/www/html/				| Log Apache		|
+| /etc/php/version/apache2/php.ini	| Conf. PHP		|
+| /etc/mysql/					| Conf. MySQL		|
+| /var/log/mysql/				| Log MySQL		|
+| /var/lib/mysql/				| Dati Database	|
+| /var/www/html/wordpress/		| Directory base wp	|
+
+
+
+
+Hai detto:
+Come installo un web server con wordpress su ubuntu?
+
+ChatGPT ha detto:
+Ecco una guida chiara e pratica per installare WordPress su Ubuntu usando un classico stack LAMP (Linux, Apache, MySQL/MariaDB, PHP).
+Funziona su Ubuntu 20.04, 22.04 e 24.04.
+
+✅ 1. Aggiorna il sistema
+sudo apt update && sudo apt upgrade -y
+✅ 2. Installa Apache
+sudo apt install apache2 -y
+Abilita Apache all’avvio:
+
+sudo systemctl enable apache2
+Test rapido:
+Apri il browser e vai su
+
+http://localhost
+Devi vedere la pagina di default di Apache.
+
+✅ 3. Installa MySQL o MariaDB
+MySQL:
+sudo apt install mysql-server -y
+MariaDB (alternativa compatibile):
+sudo apt install mariadb-server mariadb-client -y
+Metti in sicurezza l’installazione:
+
+sudo mysql_secure_installation
+✅ 4. Crea Database e Utente per WordPress
+Apri la console MySQL:
+
+sudo mysql
+Poi crea DB e utente:
+
+CREATE DATABASE wordpress DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'wpuser'@'localhost' IDENTIFIED BY 'password-sicura-qui';
+
+GRANT ALL PRIVILEGES ON wordpress.* TO 'wpuser'@'localhost';
+
+FLUSH PRIVILEGES;
+EXIT;
+✅ 5. Installa PHP + estensioni necessarie
+sudo apt install php php-mysql php-xml php-gd php-curl php-zip php-mbstring php-imagick -y
+Riavvia Apache:
+
+sudo systemctl restart apache2
+✅ 6. Scarica WordPress
+Spostati nella cartella web:
+
+cd /var/www/html
+Rimuovi la homepage di default:
+
+sudo rm index.html
+Scarica WordPress:
+
+sudo wget https://wordpress.org/latest.tar.gz
+sudo tar -xzf latest.tar.gz
+sudo mv wordpress/* .
+sudo rm -rf wordpress latest.tar.gz
+✅ 7. Permessi corretti
+sudo chown -R www-data:www-data /var/www/html
+sudo find /var/www/html -type d -exec chmod 755 {} \;
+sudo find /var/www/html -type f -exec chmod 644 {} \;
+✅ 8. Configura Apache (Virtual Host)
+Crea un nuovo file:
+
+sudo nano /etc/apache2/sites-available/wordpress.conf
+Inserisci:
+
+<VirtualHost *:80>
+    ServerName tuo-dominio-o-ip
+    DocumentRoot /var/www/html
+    <Directory /var/www/html>
+        AllowOverride All
+    </Directory>
+</VirtualHost>
+Salva, poi attiva:
+
+sudo a2ensite wordpress
+sudo a2enmod rewrite
+sudo systemctl reload apache2
+✅ 9. Completa l’installazione via browser
+Vai su:
+
+http://IP-del-server
+o
+
+http://tuodominio
+Ti apparirà il wizard di WordPress → scegli lingua → inserisci:
+
+Database: wordpress
+
+Utente DB: wpuser
+
+Password: quella che hai messo sopra
+
+Host DB: localhost
+
+Hai finito 🎉
+
+🚀 Vuoi una versione ancora più semplice con Docker?
+Posso anche darti la configurazione docker-compose.yml pronta all’uso.
+
+
+Hai detto:
+Where can I find the PHPmyAdmin web page?
+
+ChatGPT ha detto:
+If you installed phpMyAdmin on Ubuntu (e.g., using sudo apt install phpmyadmin), you can usually access it from your browser at:
+
+http://your-server-ip/phpmyadmin
+or, on your local machine:
+
+http://localhost/phpmyadmin
+✅ If the page doesn’t load
+You may need to link phpMyAdmin into Apache’s web directory manually.
+
+Run:
+
+sudo ln -s /usr/share/phpmyadmin /var/www/html/phpmyadmin
+sudo systemctl reload apache2
+Then access again:
+
+http://your-server-ip/phpmyadmin
+❗ If you haven't installed phpMyAdmin yet
+Install it with:
+
+sudo apt install phpmyadmin -y
+Choose Apache2 when prompted → press space to select, then Enter.
+
+If you missed that step, you can re-enable the setup with:
+
+sudo dpkg-reconfigure phpmyadmin
+If you want, I can check why the page isn’t loading on your system—tell me what Ubuntu version you're using and how you installed phpMyAdmin.
+
+
+Hai detto:
+say no such file or directory for ln
+
+ChatGPT ha detto:
+If ln says “No such file or directory”, it means one of the two paths is wrong:
+
+/usr/share/phpmyadmin does not exist, or
+
+/var/www/html does not exist, or it’s different (e.g., your web root is somewhere else).
+
+Let’s check step by step.
+
+✅ 1. Check if phpMyAdmin is installed
+Run:
+
+ls /usr/share
+and look for phpmyadmin.
+
+Or directly:
+
+ls -l /usr/share/phpmyadmin
+If you get No such file or directory, phpMyAdmin is not installed.
+
+Install it:
+
+sudo apt install phpmyadmin
+If you installed it already but didn’t select Apache2, reconfigure it:
+
+sudo dpkg-reconfigure phpmyadmin
+✅ 2. Check your Apache web root
+Default on Ubuntu is:
+
+/var/www/html
+Check if it exists:
+
+ls /var/www/html
+If your web root is different (for example you created a VirtualHost pointing to another folder), you need to link phpMyAdmin there instead.
+
+For example, if your DocumentRoot is /var/www/wordpress, then:
+
+sudo ln -s /usr/share/phpmyadmin /var/www/wordpress/phpmyadmin
+✅ 3. Correct ln command (only if both paths exist)
+Once both directories exist, run:
+
+sudo ln -s /usr/share/phpmyadmin /var/www/html/phpmyadmin
+sudo systemctl reload apache2
+Then visit:
+
+http://your-ip/phpmyadmin
+🔍 If you want, paste the exact output of:
+ls /usr/share
+ls /var/www/html
+and I’ll tell you the exact command you need.
+
+
+
+
