@@ -238,3 +238,27 @@ Require all granted
 
 #ED INFINE RESTARTARE APACHE2
 sudo systemctl restart apache2
+
+
+
+ssh root@142.168.80.224 (o l'utente fornito). 
+
+touch /root/Nome_Cognome 
+
+Fuori dal container: 
+
+ssh-keygen -t ed25519  
+
+ssh-copy-id root@142.168.80.224 
+
+ssh root@142.168.80.224 verifica che vada  
+
+apt install apache2 -y 
+
+sudo systemctl enable apache2 
+
+rm -rf /var/www/html/* 
+
+cp -r ~/sito_web/* /var/www/html/ 
+
+chown -R www-data:www-data /var/www/html/
