@@ -262,3 +262,7 @@ rm -rf /var/www/html/*
 cp -r ~/sito_web/* /var/www/html/ 
 
 chown -R www-data:www-data /var/www/html/
+
+
+
+echo "alias diskspace='df -m'" >> ~/.bashrc
