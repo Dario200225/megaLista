@@ -266,3 +266,9 @@ chown -R www-data:www-data /var/www/html/
 
 
 echo "alias diskspace='df -m'" >> ~/.bashrc
+
+Add 
+  • alias to /root/.bashrc (if root)
+	•	Or /home/username/.bashrc
+	•	Or directly in /etc/bash.bashrc (system-wide)
+	•	Or in ~/.profile
